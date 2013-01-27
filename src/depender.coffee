@@ -20,11 +20,21 @@ depender.missing = (dependency) ->
 
 depender.__deferred__ = []
 
-root.define = (dependencies, callback) ->
+root.define = () ->
+    switch arguments.length
+        when 2
+            [dependencies, callback] = arguments
+            namespace = window
+        when 3 
+            [path, dependencies, callback] = arguments
+            namespace = root.namespace path
+        else
+            throw "Invalid `define` arguments"
+
     if not dependencies.some depender.missing
         actions = [callback]
         while actions.length > 0
-            do action for action in actions
+            action.call namespace for action in actions
             actions = []
             procesding = depender.__deferred__
             depender.__deferred__ = []
